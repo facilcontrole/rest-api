@@ -2,9 +2,13 @@ package middleware
 
 import "net/http"
 
+var UserId string
+
 func Auth(next http.Handler) http.Handler {
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		UserId = "XXXX1"
 
 		next.ServeHTTP(w, r)
 	})
