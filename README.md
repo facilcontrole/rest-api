@@ -1,5 +1,5 @@
 
-##App
+#App
 export REST_API_DB=""
 export REST_API_HOST=""
 export REST_API_PORT=""
@@ -8,7 +8,7 @@ export REST_API_PASSWORD=""
 
 source ~/.profile
 
-##Nginx
+#Nginx
 
 server {
 	listen 80;
