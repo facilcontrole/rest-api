@@ -1,23 +1,24 @@
 package customer
 
 import (
-	"database/sql"
+	"encoding/json"
 	"io/ioutil"
 	"net/http"
 
 	"github.com/bmizerany/pat"
 	"github.com/facilcontrole/rest-api/app/middleware"
+	"github.com/facilcontrole/rest-api/database/postgres"
 	"github.com/facilcontrole/rest-api/logger"
 )
 
 type CustomerHandler struct {
-	Conn *sql.DB
+	Repository Repository
 }
 
-func NewCustomerHandler(m *pat.PatternServeMux, conn *sql.DB) {
+func NewCustomerHandler(m *pat.PatternServeMux, rp Repository) {
 
 	handler := &CustomerHandler{
-		Conn: conn,
+		Repository: rp,
 	}
 
 	m.Get("/customer", middleware.Auth(http.HandlerFunc(handler.FindAll)))
@@ -27,11 +28,26 @@ func NewCustomerHandler(m *pat.PatternServeMux, conn *sql.DB) {
 
 func (d *CustomerHandler) FindAll(w http.ResponseWriter, req *http.Request) {
 
+	conn := postgres.App()
+	defer conn.Close()
+
 	var lg logger.Logger
 	lg.Items = lg.Init(middleware.UserId, http.StatusOK, req)
-	lg.Conn = d.Conn
+	lg.Conn = conn
+
+	items, err := d.Repository.FindAll(conn)
+
+	if err != nil {
+		lg.Error(w, err)
+		return
+	}
+
+	body, _ := json.Marshal(&items)
 
 	lg.Create()
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(body)
 
 }
 
