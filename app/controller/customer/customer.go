@@ -30,7 +30,6 @@ func (d *CustomerHandler) FindAll(w http.ResponseWriter, req *http.Request) {
 
 	conn := postgres.App()
 	defer conn.Close()
-
 	var lg logger.Logger
 	lg.Items = lg.Init(middleware.UserId, http.StatusOK, req)
 	lg.Conn = conn
