@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 
-	"github.com/facilcontrole/app/controller/customer"
+	"github.com/facilcontrole/rest-api/app/controller/customer"
 	"github.com/facilcontrole/rest-api/app/models"
 )
 
@@ -15,29 +15,50 @@ func NewPostgresRepository() customer.Repository {
 	return &CustomerRepository{}
 }
 
-func (c *CustomerRepository) FindAll(conn *sql.DB) (items map[string]interface{}, err error) {
-	query, err := conn.Query("SELECT items, id FROM customer")
-	items = make(map[string]interface{})
-	customers := []models.Customer{}
-	customerItem := models.CustomerItems{}
-	var jsondata string
+func (c *CustomerRepository) FindAll(conn *sql.DB) (item map[string]interface{}, err error) {
 
-	for query.Next() {
-		customer := models.Customer{}
-		query.Scan(&jsondata, &customer.ID, &customer.Name)
-		err = json.Unmarshal([]byte(jsondata), &customerItem)
+	query := "SELECT id, items FROM customer"
 
-		if err != nil {
-			return nil, err
-		}
+	rows, err := conn.Query(query)
 
-		customer.Items = customerItem
-		customers = append(customers, customer)
+	if err != nil {
+		return
 	}
 
-	items = map[string]interface{}{}
+	defer rows.Close()
 
-	items["data"] = customers
-	items["total"] = len(customers)
+	var items []map[string]interface{}
+
+	for rows.Next() {
+
+		var id, _items string
+
+		err = rows.Scan(&id, &_items)
+
+		if err != nil {
+			return
+		}
+
+		var customer models.CustomerItems
+
+		err = json.Unmarshal([]byte(_items), &customer)
+
+		if err != nil {
+			return
+		}
+
+		it := map[string]interface{}{
+			"id":    id,
+			"phone": customer.Phone,
+		}
+
+		items = append(items, it)
+	}
+
+	item = map[string]interface{}{
+		"items": items,
+		"total": 1,
+	}
+
 	return
 }

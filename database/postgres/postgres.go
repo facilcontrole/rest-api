@@ -19,14 +19,16 @@ func App() *sql.DB {
 
 	password := os.Getenv("REST_API_PASSWORD")
 
-	port := os.Getenv("REST_API_PG_PORT")
+	port := 5432
 
-	source := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable",
+	source := fmt.Sprintf("host=%s port=%d user=%s password=%s dbname=%s sslmode=disable",
 		host,
 		port,
 		user,
 		password,
 		dbname)
+
+	println(source)
 
 	conn, err := sql.Open("postgres", source)
 
